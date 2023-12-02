@@ -292,10 +292,10 @@ if __name__ == '__main__':
     time.sleep(1)
     yjs = YJS(1920, 1080, 1)
     # yjs.MoveTo(500, 500)
-    yjs.KeyPressStr("sfdasd")
+    # yjs.KeyPressStr("sfdasd")
 
-    # for i in range(10):
-    #     yjs.KeyPressStr("sfdasd")
+    for i in range(10):
+        yjs.KeyPressStr("sfdasd")
 
     # yjs.KeyPress()
 

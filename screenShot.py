@@ -27,8 +27,10 @@ class grab_screen:
     def cap(self) -> np.ndarray:
         img = self.sct.grab(self.grab_area)
         img = np.array(img)
+        return img
+    def img_process(slef,source_img):
         # 获取原始图像的尺寸
-        height, width = img.shape[:2]
+        height, width = source_img.shape[:2]
 
         # 计算缩放比例
         scale_percent = min(640 / width, 640 / height)
@@ -38,7 +40,7 @@ class grab_screen:
         new_height = int(height * scale_percent)
 
         # 调整图像尺寸
-        resized_img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        resized_img = cv2.resize(source_img, (new_width, new_height), interpolation=cv2.INTER_AREA)
         # 创建一个空白的640x640画布
         canvas = np.zeros((640, 640, 3), dtype=np.uint8)
 
@@ -51,7 +53,6 @@ class grab_screen:
         # 在画布上添加填充
         padded_img = cv2.copyMakeBorder(resized_img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(0, 0, 0))
         return padded_img
-
 
 if __name__ == '__main__':
     sc = grab_screen(640, 1920, 1080)

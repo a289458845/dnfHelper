@@ -8,6 +8,7 @@ from mPosition import mPosition
 import directkeys
 from directkeys import ReleaseKey
 from direction_move import move
+import current_map
 
 grab_size = 640
 screen_x = 1920
@@ -70,28 +71,26 @@ tagert = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 fs = 4  # 几帧识别一次
 frame = 0  # 帧
 while True:
-    img = sc.cap()
+    img = sc.cap() # 截取原始图片
+    n_img = sc.img_process(img) # 处理图片为640 640
+    pass
     frame += 1
     if frame % 4 == 0:
-        if img is not None:
-
+        if n_img is not None:
+            # current_map.get_map(img)
             t1 = tp()
-            res = det.infer(img)
+            res = det.infer(n_img)
             t2 = tp()
             # print(f'单次推理耗时: {round(((t2 - t1) * 1000), 6)}ms')
             img_object = []
             cls_object = []
             other = []
-            person = None
+
             # 游戏
             thx = 30  # 捡东西时，x方向的阈值
             thy = 30  # 捡东西时，y方向的阈值
             attx = 150  # 攻击时，x方向的阈值
             atty = 50  # 攻击时，y方向的阈值
-            # thx = 20  # 捡东西时，x方向的阈值
-            # thy = 20  # 捡东西时，y方向的阈值
-            # attx = 20  # 攻击时，x方向的阈值
-            # atty = 20  # 攻击时，y方向的阈值
             monster_box = None
             if res is not None:  # 遍历推理结果
                 show_window(res)  # 显示对象框
@@ -101,12 +100,13 @@ while True:
                     obj = mPosition(x1, y1, x2, y2, names[cls])
                     cls_object.append(names[cls])
                     img_object.append(obj)
+                    if cls == 1:
+                        person = mPosition(x1, y1, x2, y2, names[cls])
 
             if '人物' in cls_object:
-                person = mPosition(x1, y1, x2, y2, names[cls])
                 # print(f'人物当前坐标{(int(person.x1 + person.x2) / 2), int(person.y2)} \n')
                 for model in img_object:  # 绘制人物到对象的坐标
-                    cv2.line(img,
+                    cv2.line(n_img,
                              (int(person.centerX), int(person.y2)),
                              (int(model.centerX), int(model.y2)),
                              (255, 255, 255))
@@ -233,101 +233,108 @@ while True:
                         print('怪物在右下')
 
             if '材料' in cls_object or '金币' in cls_object or '装备' in cls_object:
+                pass
                 # print(f'物品坐标')
-                min_distance = float("inf")
-                person.centerY = person.centerY + (person.width // 2) * 0.7
-                thx = thx / 2
-                thy = thy / 2
-                for idx, (c, box) in enumerate(zip(cls_object, img_object)):
-                    if c == '材料' or c == "金币":
-                        dis = ((person.centerX - box.centerX) ** 2 + (person.centerY - box.centerY) ** 2) ** 0.5
-                        if dis < min_distance:
-                            material_box = box
-                            material_index = idx
-                            min_distance = dis
-                if abs(material_box.centerY - person.centerY) < thy and abs(material_box.centerX - person.centerX) < thx:
-                    if not action_cache:
-                        pass
-                    elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
-                        ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
-                        ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
-                        action_cache = None
-                    else:
-                        ReleaseKey(direct_dic[action_cache])
-                        action_cache = None
-                    time.sleep(1)
-                    directkeys.key_press("X")
-                    print("捡东西")
-                    # breakx8
-
-                elif material_box.centerY - person.centerY < 0 and material_box.centerX - person.centerX > 0:
-
-                    if abs(material_box.centerY - person.centerY) < thy:
-                        action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif person.centerY - material_box.centerY < material_box.centerX - person.centerX:
-                        action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif person.centerY - material_box.centerY >= material_box.centerX - person.centerX:
-                        action_cache = move(direct="UP", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                elif material_box.centerY - person.centerY < 0 and material_box.centerX - person.centerX < 0:
-                    if abs(material_box.centerY - person.centerY) < thy:
-                        action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif person.centerY - material_box.centerY < person.centerX - material_box.centerX:
-                        action_cache = move(direct="LEFT_UP", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif person.centerY - material_box.centerY >= person.centerX - material_box.centerX:
-                        action_cache = move(direct="UP", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                elif material_box.centerY - person.centerY > 0 and material_box.centerX - person.centerX < 0:
-                    if abs(material_box.centerY - person.centerY) < thy:
-                        action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif material_box.centerY - person.centerY < person.centerX - material_box.centerX:
-                        action_cache = move(direct="LEFT_DOWN", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif material_box.centerY - person.centerY >= person.centerX - material_box.centerX:
-                        action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                elif material_box.centerY - person.centerY > 0 and material_box.centerX - person.centerX > 0:
-                    if abs(material_box.centerY - person.centerY) < thy:
-                        action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif material_box.centerY - person.centerY < material_box.centerX - person.centerX:
-                        action_cache = move(direct="RIGHT_DOWN", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
-                    elif material_box.centerY - person.centerY >= material_box.centerX - person.centerX:
-                        action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
-                                            press_delay=press_delay,
-                                            release_delay=release_delay)
-                        # break
+                # min_distance = float("inf")
+                # person.centerY = person.centerY + (person.width // 2) * 0.8
+                # thx = thx / 2
+                # thy = thy / 2
+                # for idx, (c, box) in enumerate(zip(cls_object, img_object)):
+                #     if box.name == '材料' or box.name == "金币":
+                #         dis = ((person.centerX - box.centerX) ** 2 + (person.centerY - box.centerY) ** 2) ** 0.5
+                #         if dis < min_distance:
+                #             material_box = box
+                #             material_index = idx
+                #             min_distance = dis
+                # if abs(material_box.centerY - person.centerY) < thy and abs(
+                #         material_box.centerX - person.centerX) < thx:
+                #     if not action_cache:
+                #         pass
+                #     elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+                #         ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
+                #         ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
+                #         action_cache = None
+                #     else:
+                #         ReleaseKey(direct_dic[action_cache])
+                #         action_cache = None
+                #     time.sleep(1)
+                #     directkeys.key_press("X")
+                #     print("捡东西")
+                #     # break
+                #
+                # elif material_box.centerY - person.centerY < 0 and material_box.centerX - person.centerX > 0:
+                #
+                #     if abs(material_box.centerY - person.centerY) < thy:
+                #         action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif person.centerY - material_box.centerY < material_box.centerX - person.centerX:
+                #         action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif person.centerY - material_box.centerY >= material_box.centerX - person.centerX:
+                #         action_cache = move(direct="UP", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                # elif material_box.centerY - person.centerY < 0 and material_box.centerX - person.centerX < 0:
+                #     if abs(material_box.centerY - person.centerY) < thy:
+                #         action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif person.centerY - material_box.centerY < person.centerX - material_box.centerX:
+                #         action_cache = move(direct="LEFT_UP", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif person.centerY - material_box.centerY >= person.centerX - material_box.centerX:
+                #         action_cache = move(direct="UP", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                # elif material_box.centerY - person.centerY > 0 and material_box.centerX - person.centerX < 0:
+                #     if abs(material_box.centerY - person.centerY) < thy:
+                #         action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif material_box.centerY - person.centerY < person.centerX - material_box.centerX:
+                #         action_cache = move(direct="LEFT_DOWN", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif material_box.centerY - person.centerY >= person.centerX - material_box.centerX:
+                #         action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                # elif material_box.centerY - person.centerY > 0 and material_box.centerX - person.centerX > 0:
+                #     if abs(material_box.centerY - person.centerY) < thy:
+                #         action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif material_box.centerY - person.centerY < material_box.centerX - person.centerX:
+                #         action_cache = move(direct="RIGHT_DOWN", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
+                #     elif material_box.centerY - person.centerY >= material_box.centerX - person.centerX:
+                #         action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
+                #                             press_delay=press_delay,
+                #                             release_delay=release_delay)
+                #         # break
 
             if '门' in cls_object:
                 pass
+            # print(f'当前操作指令{action_cache}')
+            # ReleaseKey(direct_dic["RIGHT"])
+            # ReleaseKey(direct_dic["LEFT"])
+            # ReleaseKey(direct_dic["UP"])
+            # ReleaseKey(direct_dic["DOWN"])
 
             # 重新开始
             time_option = -20
@@ -350,6 +357,6 @@ while True:
                 print("通关 - 重新开始F10")
 
             cv2.imshow('temp',
-                       img)
+                       n_img)
 
             cv2.waitKey(1)

@@ -1,4 +1,13 @@
+import directkeys
+
+point = [
+    (580, 252),  # 传送员门点击坐标
+    (448, 364)  # 毁坏的克洛斯岛
+]
+
+
 class Room:
+
     def __init__(self, name, matrix, total_rooms, current_position):
         self.name = name
         self.matrix = matrix
@@ -16,3 +25,7 @@ class Room:
                 break
 
         return row_index, col_index
+
+
+if __name__ == "__main__":
+    directkeys.mouse_click((446, 306))

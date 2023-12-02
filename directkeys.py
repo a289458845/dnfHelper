@@ -41,6 +41,26 @@ def key_press(key):
     key_up(key)
     time.sleep(0.01)
 
+
+def mouse_click(coordinates):
+    if isinstance(coordinates, tuple):  # 检查是否是单个坐标
+        coordinates = [coordinates]  # 转换为包含单个坐标的列表
+    for coord in coordinates:
+        x, y = coord
+        win32api.SetCursorPos((x, y))
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+
+def mouse_double_click(coordinates):
+    win32api.SetCursorPos(coordinates)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+    time.sleep(0.05)  # 等待一小段时间
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+
 ####################################
 import ctypes
 import time
@@ -239,24 +259,27 @@ def dead():
     time.sleep(0.5)
     ReleaseKey(M)
 
+
 if __name__ == "__main__":
     time1 = time.time()
     k = "LEFT"
     s = "D"
-    while True:
+    # mouse_click((839,237))
+    mouse_double_click((839,237))
+    # while True:
         # if abs(time.time() - time1) > 10:
         #     break
         # else:
-            # if k not in ["LEFT", "RIGHT", "UP", "DOWN"]:
-            #     key_press(s)
-            # else:
-                # PressKey(direct_dic[k])
-                # time.sleep(0.1)
-                # ReleaseKey(direct_dic[k])
-                # time.sleep(0.2)
-            PressKey(direct_dic[k])
-            key_down(s)
-            time.sleep(0.02)
-            key_up(s)
-            ReleaseKey(direct_dic[k])
-            time.sleep(0.02)
+        # if k not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+        #     key_press(s)
+        # else:
+        # PressKey(direct_dic[k])
+        # time.sleep(0.1)
+        # ReleaseKey(direct_dic[k])
+        # time.sleep(0.2)
+        # PressKey(direct_dic[k])
+        # key_down(s)
+        # time.sleep(0.02)
+        # key_up(s)
+        # ReleaseKey(direct_dic[k])
+        # time.sleep(0.02)

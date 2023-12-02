@@ -73,7 +73,7 @@ frame = 0  # 帧
 while True:
     img = sc.cap() # 截取原始图片
     n_img = sc.img_process(img) # 处理图片为640 640
-    pass
+
     frame += 1
     if frame % 4 == 0:
         if n_img is not None:

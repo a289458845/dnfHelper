@@ -41,6 +41,7 @@ class inference:
 
     def __preprocess(self, img: np.ndarray) -> np.ndarray:  # 前处理
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 处理图片重BGR 转到 RBG
+        img = cv2.resize(img, (640, 640))
         img = img.transpose(2, 0, 1)  # 图像维度转换 将原本通道维度(第三维度) 移动到第一维度
         img = img.astype(dtype=np.float32) / 255.0  # 将图像转换为float32的浮点类型，并将像素值归一到化到 0 - 1的范围
         img = np.expand_dims(img, axis=0)  # 图像数组的第0个维度上增加一个维度，为了将单张图像拓展为一个批次 输入
@@ -61,11 +62,11 @@ if __name__ == '__main__':
     infer = inference(
         infer_mode=None,
         thread=4,
-        model_path='yolov5s_best.onnx'
+        model_path='best.onnx'
     )
 
 
     img = cv2.imread('test.jpg')
-    resizeImg = cv2.resize(img,(640,640))
-    result = infer.infer(resizeImg)
+    # resizeImg = cv2.resize(img,(640,640))
+    result = infer.infer(img)
     print(f'识别结果:{result}')

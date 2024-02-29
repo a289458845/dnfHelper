@@ -264,8 +264,13 @@ if __name__ == "__main__":
     time1 = time.time()
     k = "LEFT"
     s = "D"
-    # mouse_click((839,237))
-    mouse_double_click((839,237))
+    # mouse_click((387, 304))
+    # mouse_double_click((839, 237))
+    # mouse_double_click((387, 304))
+    # mouse_double_click((387, 304))
+    time.sleep(2)
+    for i in range(10):
+        mouse_double_click((387, 304))
     # while True:
         # if abs(time.time() - time1) > 10:
         #     break
